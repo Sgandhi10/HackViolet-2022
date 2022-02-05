@@ -3,14 +3,14 @@
 const char* deviceServiceUuid = "19b10000-e8f2-537e-4f6c-d104768a1214";
 const char* deviceServiceCharacteristicUuid = "19b10001-e8f2-537e-4f6c-d104768a1214";
 
-int measuringTime = 10000;              // The time that must have a consistent reading in order to register a seziure in the system
+int measuringTime = 4000;              // The time that must have a consistent reading in order to register a seziure in the system
 int mDelayTime = 500;                   // The time between each reading for muscle sensor
 bool start = false;                     // Indicates that the first reading above the seizure level has occured
 unsigned long startTime;                // Indicates the start time of the first reading above seizure level
 bool messageSent = false;               // Indicates that a message has been sent
 int resetTime = 30000;                // The amount of time that must elapse before another message is sent out. Reset functionality for the code
-int seizureLevel = 700;                 // The reading threshold in order for it to be considered a seizure
-int bDelayTime = 100;                    // The time delay for the button readings
+int seizureLevel = 400;                 // The reading threshold in order for it to be considered a seizure
+int bDelayTime = 150;                    // The time delay for the button readings
 unsigned long checkSeizureTimeElapsed;  // The amount of time that has elapsed since the checkSeizure method has been called
 
 BLEService warningService(deviceServiceUuid); 
@@ -51,12 +51,9 @@ void loop() {
     Serial.println(" ");
 
     while (central.connected()) {
-//      if (warningCharacteristic.written()) {
-//         warning = warningCharacteristic.value();
-//         writeGesture(warning);
-//       }
          panicButton();
          if(millis() - checkSeizureTimeElapsed > mDelayTime){
+           checkSeizureTimeElapsed = millis();
            checkSeizure();
          }
          delay(bDelayTime);
@@ -65,8 +62,6 @@ void loop() {
     Serial.println("* Disconnected to central device!");
   }
   // if the panic button is pressed send a notification
-  
-  
 }
 
 void panicButton(){
@@ -78,27 +73,44 @@ void panicButton(){
 void checkSeizure(){
   //Checks to see if the criterias have been met for a seizure
   int muscleSensorVal = analogRead(A0);
-  if(muscleSensorVal > seizureLevel){
+  int elapsedTime = millis() - startTime;
+  Serial.print("Start Value: ");
+  Serial.println(start);
+//  Serial.println(muscleSensorVal);
+  if(muscleSensorVal > seizureLevel && messageSent == false){
+    Serial.println("1");
     if(start == false){
+      Serial.println("2");
       start = true;
       startTime = millis();
     }
-    else if(millis() - startTime > measuringTime && messageSent == false){
+    else if(elapsedTime > measuringTime){
+      Serial.println("3");
       sendNotification(1);
       messageSent = true;
     }
   }
-  else if(start){
-    start == false;
+  else if(start == true){
+    Serial.println("4");
+    start = false;
   }
-  else if(messageSent && millis() - startTime > resetTime){
-    messageSent == false;
-    Serial.println("reset");
+  if(messageSent == true && elapsedTime > resetTime){
+    Serial.println("5");
+    start = false;
+    messageSent = false;
+    startTime = millis();
+    sendNotification(0);
+    //break;
   }
 }
 
 bool sendNotification(int condition){
   //Sends notification
+  if(condition == 0){
+     Serial.println("reset");
+     warningCharacteristic.writeValue((byte)condition);
+     return true;
+  }
   if(condition == 1){
      Serial.println("Muscle Sensor");
      warningCharacteristic.writeValue((byte)condition);

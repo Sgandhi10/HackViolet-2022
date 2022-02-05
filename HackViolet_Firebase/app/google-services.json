@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "95104617210",
+    "project_id": "hackviolet-2022",
+    "storage_bucket": "hackviolet-2022.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:95104617210:android:043db9cba4b2aa692b5743",
+        "android_client_info": {
+          "package_name": "com.painicless.muscle_sensor"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "95104617210-8gg9n1p0v47jie5cvb6gsst9s99f5cpk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAlIGdWuCYwUM6c5--4kEv8X47aI9ILEYo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "95104617210-8gg9n1p0v47jie5cvb6gsst9s99f5cpk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
