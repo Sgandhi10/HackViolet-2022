@@ -142,5 +142,5 @@ String print2Digits(int number) {
   return tmp;
 }
 String timeAndDate(){
-   return print2Digits(2000 + rtc.getYear()) + "-" + print2Digits(rtc.getMonth()) + "-" + print2Digits((rtc.getDay()-1)) + " " + print2Digits(rtc.getHours() + GMT) + ":" + print2Digits(rtc.getMinutes()) + ":" + print2Digits(rtc.getSeconds());
+   return print2Digits(2000 + rtc.getYear()) + "-" + print2Digits(rtc.getMonth()) + "-" + print2Digits((rtc.getDay()-1) + (rtc.getHours()+GMT)/24) + " " + print2Digits((rtc.getHours() + GMT)%24) + ":" + print2Digits(rtc.getMinutes()) + ":" + print2Digits(rtc.getSeconds());
 }
