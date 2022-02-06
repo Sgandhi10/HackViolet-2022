@@ -13,12 +13,12 @@ RTCZero rtc;
 //#define WIFI_SSID 
 //#define WIFI_PASSWORD 
 
-int measuringTime = 7000;              // The time that must have a consistent reading in order to register a seziure in the system
+int measuringTime = 5000;              // The time that must have a consistent reading in order to register a seziure in the system
 int mDelayTime = 500;                   // The time between each reading for muscle sensor
 bool start = false;                     // Indicates that the first reading above the seizure level has occured
 unsigned long startTime;                // Indicates the start time of the first reading above seizure level
 bool messageSent = false;               // Indicates that a message has been sent
-int resetTime = 1000000;                // The amount of time that must elapse before another message is sent out. Reset functionality for the code
+int resetTime = 10000;                // The amount of time that must elapse before another message is sent out. Reset functionality for the code
 int seizureLevel = 500;                 // The reading threshold in order for it to be considered a seizure
 int bDelayTime = 150;                    // The time delay for the button readings
 unsigned long checkSeizureTimeElapsed;  // The amount of time that has elapsed since the checkSeizure method has been called
