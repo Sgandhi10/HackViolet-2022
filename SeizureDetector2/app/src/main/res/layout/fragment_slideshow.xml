@@ -34,4 +34,31 @@
                 android:orientation="vertical" />
         </ScrollView>
     </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/fl"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <Button
+            android:id="@+id/btn"
+            android:background="#FF0000"
+            android:text="00:00:10"
+            android:textSize="75dp"
+            android:layout_height="match_parent"
+            android:layout_width="match_parent" />
+<!--        android:layout_alignStart="@id/pgbar"-->
+<!--        android:layout_alignTop="@id/pgbar"-->
+<!--        android:layout_alignEnd="@id/pgbar"-->
+<!--        android:layout_alignBottom="@id/pgbar"-->
+        <ProgressBar
+            android:id="@+id/pgbar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
+<!--    <TextView-->
+<!--        android:id="@+id/timeleft"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent" >-->
+<!--    </TextView>-->
+
 </androidx.constraintlayout.widget.ConstraintLayout>

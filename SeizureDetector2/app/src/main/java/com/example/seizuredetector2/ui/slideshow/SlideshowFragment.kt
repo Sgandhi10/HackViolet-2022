@@ -3,11 +3,14 @@ package com.example.seizuredetector2.ui.slideshow
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ContentValues.TAG
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Typeface
 import android.location.Geocoder
 import android.location.Location
+import android.media.MediaPlayer
+import android.net.Uri
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.telephony.SmsManager
@@ -15,10 +18,9 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.core.app.ActivityCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.example.seizuredetector2.R
 import com.example.seizuredetector2.databinding.FragmentSlideshowBinding
@@ -31,6 +33,9 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.database.ktx.getValue
 import com.google.firebase.ktx.Firebase
+import org.w3c.dom.Text
+import java.text.DecimalFormat
+import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -40,6 +45,10 @@ class SlideshowFragment : Fragment() {
     private var _binding: FragmentSlideshowBinding? = null
     private lateinit var database: DatabaseReference
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var flayout : FrameLayout
+    private lateinit var butn : Button
+    private lateinit var mprogressBar : ProgressBar
+//    private lateinit var timeRemaining : TextView
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -61,6 +70,17 @@ class SlideshowFragment : Fragment() {
 //        slideshowViewModel.text.observe(viewLifecycleOwner) {
 //            textView.text = it
 //        }
+
+        mprogressBar = root.findViewById(R.id.pgbar) as ProgressBar
+        mprogressBar.visibility = View.INVISIBLE
+
+        flayout = root.findViewById(R.id.fl) as FrameLayout
+        flayout.visibility = View.INVISIBLE
+
+        butn = root.findViewById(R.id.btn) as Button
+        butn.visibility = View.INVISIBLE
+//        timeRemaining = root.findViewById(R.id.timeleft) as TextView
+//        timeRemaining.visibility = View.INVISIBLE
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
 
@@ -121,26 +141,54 @@ class SlideshowFragment : Fragment() {
                         if (time.compareTo(strDate) > 0) {
                             when(status) {
                                 "1" -> {  // seizure
-                                    // onClick(binding.root, "seizure")
-
-                                }
-                                "2" -> {  // panic attack
-                                    // onClick(binding.root, "panic attack")
+                                    onClick(binding.root, "seizure")
 
                                     // move this code to seizure later on
+                                    linearLayout.removeAllViews()
 
-//                                    activity!!.supportFragmentManager.popBackStack(null,
-//                                        FragmentManager.POP_BACK_STACK_INCLUSIVE)
-//
-//                                    activity!!.supportFragmentManager.beginTransaction()
-//                                        .setReorderingAllowed(true)
-//                                        .replace(
-//                                            R.id.thingy,
-//                                            HomeFragment(),
-//                                            "findThisFragment"
-//                                        )
-//                                        .addToBackStack(null)
-//                                        .commit()
+//                                    timeRemaining.visibility = View.VISIBLE
+                                    mprogressBar.visibility = View.VISIBLE
+
+                                    flayout.visibility = View.VISIBLE
+
+                                    butn.visibility = View.VISIBLE
+
+                                    var mCountDownTimer = object : CountDownTimer(
+                                        1000 * 10,
+                                        50
+                                    ) {
+                                        var increment = 0
+                                        override fun onFinish() {
+                                            mprogressBar.setProgress(mprogressBar.getMax())
+                                            val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "9732166660"))
+                                            startActivity(intent)
+                                        }
+
+                                        override fun onTick(millisUntilFinished: Long) {
+                                            increment =
+                                                mprogressBar.getMax() * 50 / (1000 * 5)
+                                            mprogressBar.setProgress(mprogressBar.getProgress() + increment)
+
+                                            var f : NumberFormat = DecimalFormat("00")
+
+                                            var hour = (millisUntilFinished / 3600000) % 24
+
+                                            var min = (millisUntilFinished / 60000) % 60;
+
+                                            var sec = (millisUntilFinished / 1000) % 60;
+
+                                            butn.setText(f.format(hour) + ":" + f.format(min) + ":" + f.format(sec))
+                                        }
+                                    }
+                                    mCountDownTimer.start()
+                                }
+                                "2" -> {  // panic attack
+                                    onClick(binding.root, "panic attack")
+
+                                    var mMediaPlayer : MediaPlayer? = null
+                                    mMediaPlayer = MediaPlayer.create(binding.root.context, R.raw.breathetts)
+
+                                    mMediaPlayer.start()
                                 }
                                 else -> {
                                     Log.e(TAG, "Error with Firebase retrieval")
@@ -173,7 +221,7 @@ class SlideshowFragment : Fragment() {
         val smsManager: SmsManager = SmsManager.getDefault()
 
         // ideally pull this list from gallery fragment
-        var phonies = mutableListOf("7036180767") //, "4438327344", "9732166660", "5713869265")
+        var phonies = mutableListOf("9732166660") //"7036180767", "4438327344", "9732166660", "5713869265")
 
         // location
         if (ActivityCompat.checkSelfPermission(binding.root.context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||

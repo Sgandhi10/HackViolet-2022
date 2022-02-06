@@ -2,9 +2,11 @@ package com.example.seizuredetector2.ui.home
 
 import android.Manifest
 import android.content.ContentValues.TAG
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
+import android.net.Uri
 import android.os.Bundle
 import android.telephony.SmsManager
 import android.util.Log
@@ -69,7 +71,7 @@ class HomeFragment : Fragment(), View.OnClickListener {
         val smsManager: SmsManager = SmsManager.getDefault()
 
         // ideally pull this list from gallery fragment
-        var phonies = mutableListOf("7036180767") // , "4438327344")
+        var phonies = mutableListOf("9732166660") // , "7036180767")
 
         // location
         if (ActivityCompat.checkSelfPermission(binding.root.context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
