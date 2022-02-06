@@ -138,9 +138,9 @@ String print2Digits(int number) {
   if (number < 10) {
     tmp = tmp + "0";
   }
-  tmp = tmp + number;
+  tmp = tmp + (String)number;
   return tmp;
 }
 String timeAndDate(){
-   return (String)(2000 + rtc.getYear()) + "-" + (String)rtc.getMonth() + "-" + (String)(rtc.getDay()-1) + " " + print2Digits(rtc.getHours() + GMT) + ":" + print2Digits(rtc.getMinutes()) + ":" + print2Digits(rtc.getSeconds());
+   return print2Digits(2000 + rtc.getYear()) + "-" + print2Digits(rtc.getMonth()) + "-" + print2Digits((rtc.getDay()-1)) + " " + print2Digits(rtc.getHours() + GMT) + ":" + print2Digits(rtc.getMinutes()) + ":" + print2Digits(rtc.getSeconds());
 }
