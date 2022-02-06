@@ -1,67 +1,90 @@
-#include <ArduinoBLE.h>
+#include "Firebase_Arduino_WiFiNINA.h"
+#include <SPI.h>
+#include <WiFiNINA.h> //Include this instead of WiFi101.h as needed
+#include <WiFiUdp.h>
+#include <RTCZero.h>
 
-const char* deviceServiceUuid = "19b10000-e8f2-537e-4f6c-d104768a1214";
-const char* deviceServiceCharacteristicUuid = "19b10001-e8f2-537e-4f6c-d104768a1214";
+RTCZero rtc;
 
-int measuringTime = 4000;              // The time that must have a consistent reading in order to register a seziure in the system
+#include "arduino_secrets.h"
+
+//#define DATABASE_URL 
+//#define DATABASE_SECRET 
+//#define WIFI_SSID 
+//#define WIFI_PASSWORD 
+
+int measuringTime = 8000;              // The time that must have a consistent reading in order to register a seziure in the system
 int mDelayTime = 500;                   // The time between each reading for muscle sensor
 bool start = false;                     // Indicates that the first reading above the seizure level has occured
 unsigned long startTime;                // Indicates the start time of the first reading above seizure level
 bool messageSent = false;               // Indicates that a message has been sent
-int resetTime = 30000;                // The amount of time that must elapse before another message is sent out. Reset functionality for the code
-int seizureLevel = 400;                 // The reading threshold in order for it to be considered a seizure
+int resetTime = 1000000;                // The amount of time that must elapse before another message is sent out. Reset functionality for the code
+int seizureLevel = 600;                 // The reading threshold in order for it to be considered a seizure
 int bDelayTime = 150;                    // The time delay for the button readings
 unsigned long checkSeizureTimeElapsed;  // The amount of time that has elapsed since the checkSeizure method has been called
 
-BLEService warningService(deviceServiceUuid); 
-BLEByteCharacteristic warningCharacteristic(deviceServiceCharacteristicUuid, BLERead | BLEWrite);
+int keyIndex = 0;                           // your network key Index number (needed only for WEP)
+
+int status = WL_IDLE_STATUS;
+
+const int GMT = 19;
+
+//Define Firebase data object
+FirebaseData fbdo;
 
 void setup() {
   // Sets up muscle sensor, panic button, and begins serial output
   pinMode(3, INPUT);
   pinMode(A0, INPUT);
-  Serial.begin(9600);
-  while (!Serial);
-  if (!BLE.begin()) {
-    Serial.println("- Starting BLE module failed!");
-    while (1);
+  Serial.begin(115200);
+
+  Serial.print("Connecting to Wi-Fi");
+  int status = WL_IDLE_STATUS;
+  while (status != WL_CONNECTED)
+  {
+    status = WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    Serial.print(".");
+    delay(100);
   }
+  Serial.println();
+  Serial.print("Connected with IP: ");
+  Serial.println(WiFi.localIP());
+  Serial.println();
 
-  BLE.setLocalName("Nano 33");
-  BLE.setAdvertisedService(warningService);
-  warningService.addCharacteristic(warningCharacteristic);
-  BLE.addService(warningService);
-  warningCharacteristic.writeValue(-1);
-  BLE.advertise();
+  rtc.begin();
+  unsigned long epoch;
+  delay(10000);
+  int numberOfTries = 0, maxTries = 6;
+  do {
+    epoch = WiFi.getTime();
+    numberOfTries++;
+  }
+  while ((epoch == 0) && (numberOfTries < maxTries));
+  if (numberOfTries == maxTries) {
+    Serial.print("NTP unreachable!!");
+  }
+  else {
+    Serial.print("Epoch received: ");
+    Serial.println(epoch);
+    rtc.setEpoch(epoch);
+    Serial.println();
+  }
+  Serial.println(timeAndDate());
+  delay(1000);
 
-  Serial.println("Nano 33 BLE (Peripheral Device)");
-  Serial.println(" ");
+  //Provide the autntication data
+  Firebase.begin(DATABASE_URL, DATABASE_SECRET, WIFI_SSID, WIFI_PASSWORD);
+  Firebase.reconnectWiFi(true);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  BLEDevice central = BLE.central();
-  Serial.println("- Discovering central device...");
-  delay(500);
-
-  if (central) {
-    Serial.println("* Connected to central device!");
-    Serial.print("* Device MAC address: ");
-    Serial.println(central.address());
-    Serial.println(" ");
-
-    while (central.connected()) {
-         panicButton();
-         if(millis() - checkSeizureTimeElapsed > mDelayTime){
-           checkSeizureTimeElapsed = millis();
-           checkSeizure();
-         }
-         delay(bDelayTime);
-    }
-    
-    Serial.println("* Disconnected to central device!");
-  }
-  // if the panic button is pressed send a notification
+ panicButton();
+ if(millis() - checkSeizureTimeElapsed > mDelayTime){
+   checkSeizureTimeElapsed = millis();
+   checkSeizure();
+ }
+ delay(bDelayTime);
 }
 
 void panicButton(){
@@ -74,51 +97,50 @@ void checkSeizure(){
   //Checks to see if the criterias have been met for a seizure
   int muscleSensorVal = analogRead(A0);
   int elapsedTime = millis() - startTime;
-  Serial.print("Start Value: ");
-  Serial.println(start);
 //  Serial.println(muscleSensorVal);
   if(muscleSensorVal > seizureLevel && messageSent == false){
-    Serial.println("1");
     if(start == false){
-      Serial.println("2");
       start = true;
       startTime = millis();
     }
     else if(elapsedTime > measuringTime){
-      Serial.println("3");
       sendNotification(1);
       messageSent = true;
     }
   }
   else if(start == true){
-    Serial.println("4");
     start = false;
   }
   if(messageSent == true && elapsedTime > resetTime){
-    Serial.println("5");
     start = false;
     messageSent = false;
     startTime = millis();
-    sendNotification(0);
-    //break;
   }
 }
 
 bool sendNotification(int condition){
   //Sends notification
-  if(condition == 0){
-     Serial.println("reset");
-     warningCharacteristic.writeValue((byte)condition);
-     return true;
-  }
   if(condition == 1){
      Serial.println("Muscle Sensor");
-     warningCharacteristic.writeValue((byte)condition);
+     String jsonData = "{\"" + timeAndDate() + "\":\"" + 1 + "\"}";
+     Firebase.pushJSON(fbdo, "/", jsonData);
      return true;
   }
   if(condition == 2){
     Serial.println("Panic Button");
-    warningCharacteristic.writeValue((byte)condition);
+    String jsonData = "{\"" + timeAndDate() + "\":\"" + 2 + "\"}";
+    Firebase.pushJSON(fbdo, "/", jsonData);
     return true;
   }
+}
+String print2Digits(int number) {
+  String tmp = "";
+  if (number < 10) {
+    tmp = tmp + "0";
+  }
+  tmp = tmp + number;
+  return tmp;
+}
+String timeAndDate(){
+   return (String)(2000 + rtc.getYear()) + "-" + (String)rtc.getMonth() + "-" + (String)(rtc.getDay()-1) + " " + print2Digits(rtc.getHours() + GMT) + ":" + print2Digits(rtc.getMinutes()) + ":" + print2Digits(rtc.getSeconds());
 }
