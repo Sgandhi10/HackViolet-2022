@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "457780002270",
+    "firebase_url": "https://hackviolet-2022-38530-default-rtdb.firebaseio.com",
+    "project_id": "hackviolet-2022-38530",
+    "storage_bucket": "hackviolet-2022-38530.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:457780002270:android:cb90adae2ff74f9004714f",
+        "android_client_info": {
+          "package_name": "com.example.seizuredetector2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "457780002270-3q37qc314laf42ishkmmjpqvqdr1ckc6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_Pz2Plpqx6_06QvBNggZAimaGDoG3UtA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "457780002270-3q37qc314laf42ishkmmjpqvqdr1ckc6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
