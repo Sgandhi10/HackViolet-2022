@@ -1,9 +1,9 @@
 <resources>
-    <string name="app_name">SeizureDetector</string>
+    <string name="app_name">Band Aid Together</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="nav_header_title">Seizure Detector</string>
-    <string name="nav_header_subtitle">seizuredetector@gmail.com</string>
+    <string name="nav_header_title">Band Aid Together</string>
+    <string name="nav_header_subtitle">Vikram, Soham, Justin, Forrest</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
 
